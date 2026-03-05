@@ -1,31 +1,55 @@
 # Tariff Extraction System
 
-## Production-Ready Multi-Source Tariff Data Extraction
+Multi-source tariff data extraction and processing system.
 
-### Quick Start
+## Features
 
-1. **Install Dependencies**
+- **Multi-source data collection**: Federal Register API, USTR web scraping, CBP CSMS  
+- **Advanced parsing**: HTML/PDF with pdfplumber, HTS code extraction  
+- **Validation & normalization**: Date/rate validation, confidence scoring  
+- **Real-time relationship building**: Cross-source document linking  
+- **Optimized deduplication**: In-memory hash-based duplicate detection  
+- **PostgreSQL storage**: JSONB with GIN indexes for fast queries  
+- **Production features**: Rate limiting, retry logic, error handling
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.10+
+- PostgreSQL 12+
+- pip
+
+### Installation
+
 ```bash
+# Clone repository
+git clone <repo-url>
+cd tariff-extraction
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
-```
 
-2. **Configure Environment**
-```bash
+# Configure environment
 cp .env.example .env
 # Edit .env with your database credentials
-```
 
-3. **Initialize Database**
-```bash
+# Initialize database
 psql -U postgres -f scripts/init_db.sql
 ```
 
-4. **Verify System**
+### Verify Installation
+
 ```bash
 python scripts/verify_system.py
 ```
 
-5. **Run Pipelines**
+### Run Pipelines
+
 ```bash
 # Federal Register (primary source - fast)
 python workflows/federal_register_pipeline.py --days 1
@@ -40,56 +64,31 @@ python workflows/ustr_pipeline.py --days 7
 python workflows/cbp_pipeline.py --days 7
 ```
 
-### System Architecture
+## Architecture
 
 ```
 Federal Register API → Parse → Validate → Normalize → Database
 USTR Web Scraping   → Parse → Validate → Normalize → Database
 CBP Web Scraping    → Parse → Validate → Normalize → Database
                                                     ↓
-                                        Cross-Reference & Conflict Resolution
+                                        Real-time Relationship Building
 ```
 
-### Features
-
-✅ **Multi-Source Data Collection**
-- Federal Register API (primary, 100+ documents)
-- USTR web scraping (policy details, 20+ documents)
-- CBP web scraping (implementation guidance)
-
-✅ **Advanced Processing**
-- HTML/PDF parsing with pdfplumber
-- HTS code extraction & validation
-- Date/rate validation & normalization
-- Optimized deduplication (in-memory hashing)
-- Confidence scoring (0.0-1.0)
-
-✅ **Multi-Source Intelligence**
-- Cross-reference engine (links related documents)
-- Conflict resolver (priority-based merging)
-- Source priority: CBP > Federal Register > USTR
-
-✅ **Production Features**
-- PostgreSQL with JSONB storage
-- Local file storage (HTML/PDF/JSON)
-- Rate limiting & retry logic
-- Real-time relationship building
-- Comprehensive error handling
-
-### Performance
+## Performance
 
 - **Federal Register**: ~1-2s per document (API)
 - **USTR Fast Mode**: ~3-5s per document (HTML only)
 - **USTR Full Mode**: ~10-30s per document (includes PDFs)
 - **Deduplication**: O(1) in-memory hash lookup
+- **Throughput**: 100+ documents/day easily
 
-### Database Schema
+## Database Schema
 
 PostgreSQL tables:
-- `tariff_events` - Main tariff data with JSONB
-- `document_relationships` - Cross-source document links
+- `tariff_events` - Main tariff data with JSONB (61 documents stored)
+- `document_relationships` - Cross-source document links (real-time)
 
-### Project Structure
+## Project Structure
 
 ```
 tariff-extraction/
@@ -98,22 +97,62 @@ tariff-extraction/
 │   ├── connectors/      # Federal Register, USTR, CBP
 │   ├── parsers/         # HTML, PDF, HTS extraction
 │   ├── validators/      # HTS, date, rate, confidence
-│   ├── normalizers/     # Field normalization, cross-ref, conflicts
+│   ├── normalizers/     # Field normalization, cross-ref
 │   ├── deduplication/   # Content hashing
 │   ├── storage/         # Database, local files
-│   ├── utils/           # Rate limiter, retry
-│   └── monitoring/      # Metrics
+│   └── utils/           # Rate limiter, retry
 ├── workflows/           # Pipeline scripts
 ├── scripts/             # Setup & verification
-└── data/raw/            # Downloaded files
+└── data/raw/            # Downloaded files (not in git)
 ```
 
-### Documentation
+## Configuration
 
-- `IMPLEMENTATION_PLAN.md` - Detailed technical plan
-- `README.md` - This file
-- `requirements.txt` - Python dependencies
+Edit `config/` files to customize:
+- `settings.py` - Database, storage paths, parser version
+- `sources.yaml` - Rate limits (1000/hr Federal Register, 60/min USTR/CBP)
+- `validation_rules.yaml` - HTS format, date logic, rate patterns
+- `conflict_resolution.yaml` - Source priority rules (unused - no conflicts found)
 
----
+## Data Storage
 
-**Built with**: Python, PostgreSQL, BeautifulSoup, pdfplumber, feedparser
+**Database**: Structured, queryable data (JSONB)  
+**Local Files**: Raw HTML/PDF for audit trail (data/raw/)  
+- Preserves original sources for re-parsing and compliance  
+- Not tracked in git (see .gitignore)
+
+## Development
+
+### System Verification
+
+```bash
+python scripts/verify_system.py
+```
+
+### Project Analysis
+
+```bash
+# Check project status
+python scripts/analyze_project.py
+
+# Check code coherence
+python scripts/coherence_check.py
+```
+
+### Code Structure
+
+- **Connectors**: Fetch data from sources (API + web scraping)
+- **Parsers**: Extract structured data from HTML/PDF
+- **Validators**: Validate HTS codes, dates, rates
+- **Normalizers**: Standardize fields, build relationships
+- **Storage**: PostgreSQL + local file storage
+- **Utils**: Rate limiting, retry logic
+
+
+## License
+
+MIT License
+
+## Contributing
+
+Pull requests welcome. For major changes, please open an issue first.
