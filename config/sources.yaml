@@ -1,0 +1,24 @@
+sources:
+  federal_register:
+    priority: 1
+    base_url: "https://www.federalregister.gov/api/v1"
+    rate_limit: 1000
+    retry_attempts: 3
+    timeout: 30
+    schedule: "15 6,12,18 * * *"
+    
+  cbp_csms:
+    priority: 2
+    base_url: "https://www.cbp.gov"
+    rate_limit: 60
+    retry_attempts: 3
+    timeout: 30
+    schedule: "*/30 * * * *"
+    
+  ustr:
+    priority: 3
+    base_url: "https://ustr.gov"
+    rate_limit: 60
+    retry_attempts: 3
+    timeout: 30
+    schedule: "0 8 * * *"

@@ -1,0 +1,29 @@
+hts_code:
+  pattern: "^\\d{4}\\.\\d{2}\\.\\d{4}$"
+  length: 13
+  validate_against_usitc: true
+
+date_logic:
+  - rule: "effective_date >= publication_date"
+    severity: "error"
+  - rule: "expiration_date > effective_date"
+    severity: "warning"
+
+rate_format:
+  types: ["ad_valorem", "specific", "compound"]
+  ad_valorem_pattern: "^\\d+(\\.\\d+)?%$"
+  specific_pattern: "^\\$\\d+(\\.\\d+)?\\s*(per|/)"
+
+required_fields:
+  - source
+  - document_type
+  - title
+  - publication_date
+  - tariff_action.type
+  - source_url
+
+confidence_thresholds:
+  excellent: 0.9
+  good: 0.75
+  fair: 0.6
+  poor: 0.4
